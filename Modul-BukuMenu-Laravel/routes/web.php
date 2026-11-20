@@ -9,19 +9,22 @@ Route::get('/', function () {
     return redirect()->route('menu.daftar');
 })->name('home');
 
-// Route login dan logout
-Route::get('/login', [AuthController::class, 'showLogin'])
-    ->name('login');
+// Route login hanya untuk Guest
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])
+        ->name('login');
 
-Route::post('/login', [AuthController::class, 'login'])
-    ->name('login.process');
+    Route::post('/login', [AuthController::class, 'login'])
+        ->name('login.process');
+});
 
+// Route logout
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-// Halaman menu hanya bisa diakses setelah login
-Route::middleware('auth')->group(function () {
+// Route untuk Staff dan Admin
+Route::middleware(['auth', 'role:staff,admin'])->group(function () {
 
     Route::get('/daftar-menu', [MenuController::class, 'daftar'])
         ->name('menu.daftar');
@@ -31,6 +34,10 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/menu/tambah', [MenuController::class, 'store'])
         ->name('menu.store');
+});
+
+// Route khusus Admin menggunakan Middleware dan Gate
+Route::middleware(['auth', 'role:admin', 'can:manage-menu'])->group(function () {
 
     Route::get('/menu/edit/{id}', [MenuController::class, 'edit'])
         ->name('menu.edit');

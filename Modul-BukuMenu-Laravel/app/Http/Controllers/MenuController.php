@@ -49,12 +49,18 @@ class MenuController extends Controller
     {
         $menu = Menu::findOrFail($id);
 
+        $this->authorize('update', $menu);
+
         return view('menu.edit', compact('menu'));
     }
 
     // Menyimpan perubahan menu
     public function update(Request $request, $id)
     {
+        $menu = Menu::findOrFail($id);
+
+        $this->authorize('update', $menu);
+
         $request->validate([
             'nama_menu' => 'required|string|max:255',
             'kategori' => 'required|string',
@@ -62,8 +68,6 @@ class MenuController extends Controller
             'status_halal' => 'required|string',
             'harga' => 'required|numeric|min:0',
         ]);
-
-        $menu = Menu::findOrFail($id);
 
         $menu->update($request->only([
             'nama_menu',
@@ -81,6 +85,8 @@ class MenuController extends Controller
     public function hapus($id)
     {
         $menu = Menu::findOrFail($id);
+
+        $this->authorize('delete', $menu);
 
         $menu->delete();
 

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Menu - Rumah Makan Radit</title>
+    <title>Daftar Menu - Restoran Kelompok 4</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
           rel="stylesheet">
@@ -15,7 +15,7 @@
 <nav class="navbar navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="{{ url('/daftar-menu') }}">
-            Rumah Makan Radit
+            Restoran Kelompok 4
         </a>
 
         <div class="d-flex align-items-center gap-3">
@@ -45,7 +45,7 @@
         <h2>Daftar Menu</h2>
 
         @auth
-            <a href="{{ route('menu.tambah') }}" class="btn btn-primary">
+            <a href="{{ route('menu.tambah') }}" class="btn btn-gold">
                 + Tambah Menu
             </a>
         @endauth
@@ -63,9 +63,9 @@
                     <th>Status Halal</th>
                     <th>Harga</th>
 
-                    @auth
+                    @can('manage-menu')
                         <th>Aksi</th>
-                    @endauth
+                    @endcan
                 </tr>
             </thead>
 
@@ -93,30 +93,35 @@
                             Rp{{ number_format($item->harga, 0, ',', '.') }}
                         </td>
 
-                        @auth
+                        @can('manage-menu')
                             <td class="text-nowrap">
-                                <a href="{{ route('menu.edit', $item->id) }}"
-                                   class="btn btn-warning btn-sm">
-                                    Edit
-                                </a>
+                                @can('update', $item)
+                                    <a href="{{ route('menu.edit', $item->id) }}"
+                                       class="btn btn-gold btn-sm">
+                                        Edit
+                                    </a>
+                                @endcan
 
-                                <form action="{{ route('menu.hapus', $item->id) }}"
-                                      method="POST"
-                                      class="d-inline"
-                                      onsubmit="return confirm('Yakin ingin menghapus menu ini?');">
-                                    @csrf
-                                    @method('DELETE')
+                                @can('delete', $item)
+                                    <form action="{{ route('menu.hapus', $item->id) }}"
+                                          method="POST"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Yakin ingin menghapus menu ini?');">
+                                        @csrf
+                                        @method('DELETE')
 
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        Hapus
-                                    </button>
-                                </form>
+                                        <button type="submit" class="btn btn-gold btn-sm">
+                                            Hapus
+                                        </button>
+                                    </form>
+                                @endcan
                             </td>
-                        @endauth
+                        @endcan
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ Auth::check() ? 7 : 6 }}" class="text-center">
+                        <td colspan="{{ Auth::check() && Auth::user()->can('manage-menu') ? 7 : 6 }}"
+                            class="text-center">
                             Belum ada data menu.
                         </td>
                     </tr>
