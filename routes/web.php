@@ -1,50 +1,37 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\MenuController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SupplierController;
+use Illuminate\Support\Facades\Route;
 
-// Halaman utama
-Route::get('/', function () {
-    return redirect()->route('menu.daftar');
-})->name('home');
+Route::get('/', [SupplierController::class, 'daftar'])->name('supplier.daftar');
+Route::get('/supplier', [SupplierController::class, 'daftar']);
 
-// Route login hanya untuk Guest
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLogin'])
-        ->name('login');
-
-    Route::post('/login', [AuthController::class, 'login'])
-        ->name('login.process');
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.proses');
 });
 
-// Route logout
-Route::post('/logout', [AuthController::class, 'logout'])
-    ->middleware('auth')
-    ->name('logout');
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Route untuk Staff dan Admin
-Route::middleware(['auth', 'role:staff,admin'])->group(function () {
+    Route::middleware('role:admin,staff')->group(function () {
+        Route::get('/supplier/tambah', [SupplierController::class, 'create'])->name('supplier.create');
+        Route::post('/supplier', [SupplierController::class, 'store'])->name('supplier.store');
+        Route::get('/supplier/{supplier}/edit', [SupplierController::class, 'edit'])
+            ->name('supplier.edit')
+            ->can('update', 'supplier');
+        Route::put('/supplier/{supplier}', [SupplierController::class, 'update'])
+            ->name('supplier.update')
+            ->can('update', 'supplier');
+    });
 
-    Route::get('/daftar-menu', [MenuController::class, 'daftar'])
-        ->name('menu.daftar');
+    Route::delete('/supplier/{supplier}', [SupplierController::class, 'destroy'])
+        ->name('supplier.destroy')
+        ->middleware('role:admin')
+        ->can('delete', 'supplier');
 
-    Route::get('/menu/tambah', [MenuController::class, 'tambah'])
-        ->name('menu.tambah');
-
-    Route::post('/menu/tambah', [MenuController::class, 'store'])
-        ->name('menu.store');
-});
-
-// Route khusus Admin menggunakan Middleware dan Gate
-Route::middleware(['auth', 'role:admin', 'can:manage-menu'])->group(function () {
-
-    Route::get('/menu/edit/{id}', [MenuController::class, 'edit'])
-        ->name('menu.edit');
-
-    Route::put('/menu/edit/{id}', [MenuController::class, 'update'])
-        ->name('menu.update');
-
-    Route::delete('/menu/hapus/{id}', [MenuController::class, 'hapus'])
-        ->name('menu.hapus');
+    Route::get('/admin/panel', fn () => view('panel'))
+        ->middleware('can:akses-admin')
+        ->name('admin.panel');
 });
