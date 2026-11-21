@@ -9,42 +9,33 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        if (Auth::check()) {
-            return redirect()->route('menu.daftar');
-        }
-
-        return view('auth.login');
+        return view('login');
     }
 
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
+            'username' => ['required'],
+            'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-
-            return redirect()->intended(route('menu.daftar'))
-                ->with('success', 'Selamat datang, ' . Auth::user()->username . '!');
+            return redirect()->intended('/');
         }
 
-        return back()
-            ->withErrors([
-                'username' => 'Username atau password salah.'
-            ])
-            ->onlyInput('username');
+        return back()->withErrors([
+            'username' => 'Username atau password salah.',
+        ])->onlyInput('username');
     }
 
+    // Logout
     public function logout(Request $request)
     {
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')
-            ->with('success', 'Anda berhasil logout.');
+        return redirect('/');
     }
 }
