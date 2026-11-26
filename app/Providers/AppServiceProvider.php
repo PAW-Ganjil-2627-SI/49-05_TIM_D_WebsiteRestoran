@@ -19,5 +19,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('akses-admin', fn (User $user) => $user->hasRole('admin')
             ? Response::allow()
             : Response::deny('Hanya admin yang boleh membuka halaman ini.'));
+
+        Gate::define('kelola-pegawai', fn (User $user) => $user->hasRole('admin'));
     }
 }

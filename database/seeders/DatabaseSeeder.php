@@ -19,5 +19,10 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('staff123'),
             'role' => 'staff',
         ]);
+
+        User::updateOrCreate(['username' => 'user'], [
+            'password' => Hash::make('user123'),
+            'role' => 'user',
+        ]);
     }
 }

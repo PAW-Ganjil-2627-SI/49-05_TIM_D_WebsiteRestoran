@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\TambahController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SupplierController::class, 'daftar'])->name('supplier.daftar');
@@ -34,4 +35,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/panel', fn () => view('panel'))
         ->middleware('can:akses-admin')
         ->name('admin.panel');
+
+    // Modul Pegawai
+    Route::get('/pegawai', [TambahController::class, 'index'])->name('tambah.index');
+
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/daftar-tambah', [TambahController::class, 'daftar'])->name('tambah.daftar');
+        Route::post('/tambah', [TambahController::class, 'store'])->name('tambah.store');
+        Route::get('/tambah/{tambah}/edit', [TambahController::class, 'edit'])->name('tambah.edit');
+        Route::put('/tambah/{tambah}', [TambahController::class, 'update'])->name('tambah.update');
+        Route::delete('/tambah/{tambah}', [TambahController::class, 'destroy'])->name('tambah.destroy');
+    });
 });
