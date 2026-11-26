@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MejaController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TambahController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SupplierController::class, 'daftar'])->name('supplier.daftar');
 Route::get('/supplier', [SupplierController::class, 'daftar']);
+Route::get('/meja', [MejaController::class, 'index'])->name('meja.index');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -16,6 +19,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    // Modul Supplier Bahan Baku
     Route::middleware('role:admin,staff')->group(function () {
         Route::get('/supplier/tambah', [SupplierController::class, 'create'])->name('supplier.create');
         Route::post('/supplier', [SupplierController::class, 'store'])->name('supplier.store');
@@ -46,4 +50,36 @@ Route::middleware('auth')->group(function () {
         Route::put('/tambah/{tambah}', [TambahController::class, 'update'])->name('tambah.update');
         Route::delete('/tambah/{tambah}', [TambahController::class, 'destroy'])->name('tambah.destroy');
     });
+
+    // Modul Master Meja
+    Route::get('/meja/tambah', [MejaController::class, 'create'])
+        ->can('tambah-meja')
+        ->name('meja.create');
+
+    Route::post('/meja', [MejaController::class, 'store'])
+        ->middleware('role:admin')
+        ->name('meja.store');
+
+    Route::middleware('role:admin,staff')->group(function () {
+        Route::get('/meja/{meja}/edit', [MejaController::class, 'edit'])
+            ->name('meja.edit')
+            ->can('update', 'meja');
+        Route::put('/meja/{meja}', [MejaController::class, 'update'])
+            ->name('meja.update')
+            ->can('update', 'meja');
+    });
+
+    Route::delete('/meja/{meja}', [MejaController::class, 'destroy'])
+        ->name('meja.destroy')
+        ->middleware('role:admin')
+        ->can('delete', 'meja');
 });
+
+Route::get('/tes-koneksi', function () {
+    try {
+        DB::connection()->getPdo();
+        return 'DB berhasil connect!';
+    } catch (\Exception $e) {
+        return 'DB gagal connect: ' . $e->getMessage();
+    }
+})->withoutMiddleware('web');
